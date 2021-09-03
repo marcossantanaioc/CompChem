@@ -1,0 +1,17 @@
+compute_grids                             yes
+grid_spacing                              0.3
+output_molecule                           no
+contact_score                             no
+energy_score                              yes
+energy_cutoff_distance                    30
+atom_model                                a
+attractive_exponent                       6
+repulsive_exponent                        12
+distance_dielectric                       yes
+dielectric_factor                         4
+bump_filter                               yes
+bump_overlap                              0.75
+receptor_file                             receptor/2h8h.mol2
+box_file                                  receptor/2h8h_box.pdb
+vdw_definition_file                       /home/marcossantana/dock6/parameters/vdw_AMBER_parm99.defn
+score_grid_prefix                         grid/2h8h
