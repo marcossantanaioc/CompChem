@@ -12,7 +12,9 @@ from chembl_structure_pipeline import standardizer
 from chembl_structure_pipeline import checker
 
 from functools import partial
-#from utils import SanitizerClass
+from rdkit import rdBase
+rdBase.DisableLog('rdApp.error')
+rdBase.DisableLog('rdApp.info')
 
 # Zn not in the list as we have some Zn containing compounds in ChEMBL
 # most of them are simple salts
