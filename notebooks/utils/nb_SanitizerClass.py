@@ -84,10 +84,10 @@ class ChEMBLSanitizer():
         #self.molblocks = self.multi_molblock(dataframe[smiles_column].tolist())
 
     def __str__(self):
-        return f'Data has {len(self.dataframe)} records'
+        return f'Data has {len(self.data)} records'
 
     def __len__(self):
-        return len(self.dataframe)
+        return len(self.data)
 
 
     def add_mol_column(self, data):
