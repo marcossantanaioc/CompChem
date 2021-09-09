@@ -7,7 +7,8 @@
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem.AllChem import GetMACCSKeysFingerprint
-from descriptastorus.descriptors import DescriptorGenerator, MorganCounts, Morgan, RDKit2D, RDKitFPBits, FeatureMorganCounts, FeatureMorgan, AtomPair, AtomPairCounts
+from descriptastorus.descriptors import DescriptorGenerator, MorganCounts, Morgan, RDKit2DNormalized, RDKitFPBits, FeatureMorganCounts, FeatureMorgan, AtomPair, AtomPairCounts
+
 
 class MACCSGenerator(DescriptorGenerator):
     """Computes MACCS bitvector"""
@@ -25,11 +26,12 @@ class MACCSGenerator(DescriptorGenerator):
 
 
 class Fingerprinter():
-    def __init__(self, smiles):
-        self.smiles = smiles
+    def __init__(self, gen):
+        self.gen = gen
 
 
-    def _define_generators(self, gen, **kwargs):
+
+    def _define_generators(self, **kwargs):
 
         '''Define feature generator.
 
@@ -37,6 +39,7 @@ class Fingerprinter():
         gen : str
             Name of the generator to use. Options:
 
+	        maccs : MACCS keys
             ecfp : Morgan fingerprints (extended connectivity fingerprint)
             fcfp : Feature-based Morgan fingerprints (functional connectivity fingerprint)
             atom_pairs : Atom pairs as defined in https://pubs.acs.org/doi/10.1021/ci00046a002
@@ -51,22 +54,25 @@ class Fingerprinter():
         nbits = kwargs.get('nbits', 2048)
 
 
-        if gen == 'ecfp':
+        if self.gen == 'ecfp':
             feature_generator = Morgan(radius=radius,nbits=nbits)
 
-        elif gen == 'atom_pairs':
+        elif self.gen == 'atom_pairs':
             feature_generator = AtomPairCounts(nbits=nbits)
 
-        elif gen == 'fcfp':
+        elif self.gen == 'fcfp':
             feature_generator = FeatureMorgan(radius=radius,nbits=nbits)
 
-        elif gen == 'maccs':
+        elif self.gen == 'maccs':
             feature_generator = MACCSGenerator()
+            
+        elif self.gen == 'rdkit2d':
+            feature_generator = RDKit2DNormalized()
 
         return feature_generator
 
 
-    def generate_fingerprint(self, gen, **kwargs):
+    def generate_features(self, smiles, **kwargs):
         '''Calculate features for a list of SMILES using a feature generator.
 
         Arguments:
@@ -84,22 +90,21 @@ class Fingerprinter():
         radius : int
             Radius around central atom to calculate Morgan fingerprints'''
 
-        if not isinstance(gen, str):
+        if not isinstance(self.gen, str):
             raise TypeError('Please provide a string that represents a valid generator name.')
 
-        if gen not in ['maccs','ecfp', 'fcfp', 'atom_pairs','maccs']:
-            raise ValueError("Please provide a valid generator. Viable options are: 'maccs','ecfp', 'fcfp', 'atom_pairs'")
+        if self.gen not in ['maccs','ecfp', 'fcfp', 'atom_pairs','rdkit2d']:
+            raise ValueError("Please provide a valid generator. Viable options are:'maccs','ecfp', 'fcfp', 'atom_pairs', 'rdkit2d'")
 
 
-        feature_generator = self._define_generators(gen=gen, **kwargs)
-        return np.array(feature_generator.processSmiles(self.smiles)[1])[:, 1:]
+        feature_generator = self._define_generators(gen=self.gen, **kwargs)
+        return np.array(feature_generator.processSmiles(smiles)[1])[:, 1:]
 
-
-    def __len__(self):
-        return len(self.smiles)
-
-    def __getitem__(self, i):
-        return self.smiles[i]
 
     def __str__(self):
-        return 'Size of SMILES dataset: {}\nFirst SMILES: {}'.format(len(self.smiles), self.smiles[0])
+        return f'Selected feature generator : {self.gen}'
+    
+    
+    @property
+    def generator(self):
+        return self._define_generators()
